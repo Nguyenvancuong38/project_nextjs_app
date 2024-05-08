@@ -35,7 +35,7 @@ function CreateUser() {
 
     return (
         <div className='w-[600px] border mb-8'>
-            <Form {...formItemLayout} variant="filled" style={{ minWidth: 600 }} onFinish={onFinish}>
+            <Form {...formItemLayout} variant="outlined" style={{ minWidth: 600 }} onFinish={onFinish}>
                 <h2 className='font-bold text-2xl text-center my-5'>Create user</h2>
                 <Form.Item
                     label="Code"
