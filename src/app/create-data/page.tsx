@@ -1,13 +1,10 @@
+'use client'
+
 import React from 'react';
 import CreateUser from '@/components/app.createUser';
-import { Metadata } from 'next';
 import CreateDepartment from '@/components/app.createDepartment';
 import CreateProduct from '@/components/app.createProduct';
-
-export const metadata: Metadata = {
-    title: "Create data",
-    description: "Create data",
-  };
+import { withAuthentication } from '@/libs/hoc/withAuthentication';
 
 const Create: React.FC = () => {
     return (
@@ -19,4 +16,4 @@ const Create: React.FC = () => {
     );
 } 
 
-export default Create;
+export default withAuthentication(Create, ['admin']);

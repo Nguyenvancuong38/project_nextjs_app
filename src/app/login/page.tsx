@@ -1,12 +1,23 @@
 'use client'
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation'
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
+import { signin } from '@/api/auth/signin';
 
 const Login: React.FC = () => {
-  const onFinish = (values: any) => {
-    console.log('Received values of form: ', values);
+  const [errMsg, setErrMsg] = useState<string>()
+  const route = useRouter();
+  const onFinish = async (values: any) => {
+    try {
+        const res = await signin(values);
+        if(res == 200) {
+            route.push('/');
+        }
+    } catch (error: any) {
+        setErrMsg(error.response?.data?.message ? error.response?.data?.message: 'Have error when login!');
+    }
   };
 
   return (
@@ -53,6 +64,8 @@ const Login: React.FC = () => {
                         Submit
                     </Button>
                 </Form.Item>
+
+                <div className='w-full text-red-600 text-base text-center'>{errMsg}</div>
             </Form>
         </div>
     </div>

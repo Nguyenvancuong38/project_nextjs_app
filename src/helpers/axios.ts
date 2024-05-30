@@ -1,12 +1,12 @@
 import { getAccessToken } from "@/helpers/localAuth";
 import axios from "axios";
 
-const apiClient = axios.create({
-  baseURL: process.env.API_URL,
+const axiosInstance = axios.create({
+  baseURL: "http://localhost:3004/v1",
 });
 
 // Add a request interceptor
-apiClient.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   function (config: any) {
     config.headers = {
       Authorization: `${getAccessToken()}`,
@@ -22,7 +22,7 @@ apiClient.interceptors.request.use(
 );
 
 // Add a response interceptor
-apiClient.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
@@ -39,4 +39,4 @@ apiClient.interceptors.response.use(
   }
 );
 
-export default apiClient;
+export default axiosInstance;
