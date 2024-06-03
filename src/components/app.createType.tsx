@@ -1,5 +1,7 @@
 'use client'
 
+import { createTypeApi, getTopicsApi } from '@/api/apiClient';
+import { pickFields } from '@/utils/common';
 import {
     Button,
     Form,
@@ -7,8 +9,6 @@ import {
     Select,
     message,
 } from 'antd';
-import { pickFields } from '@/utils/common';
-import { createProductApi, getUserApi } from '@/api/apiClient';
 import { useState } from 'react';
 
 const formItemLayout = {
@@ -22,18 +22,14 @@ const formItemLayout = {
     },
 };
 
-function CreateProduct() {
-    const [optionsUser, setOptionsUser] = useState([]);
+function CreateType() {
     const [form] = Form.useForm();
+    const [topicOption, setTopicOption] = useState([]);
 
     const onFinish = async (values: any) => {
         try {
-            const formData = {
-                ...values,
-                updateAt: new Date().toISOString() 
-            }
-            const data = await createProductApi(formData);
-            if (data.status == 201) {
+            const data = await createTypeApi(values);
+            if(data.status == 201) {
                 form.resetFields();
                 message.success('Create product successful');
             } else {
@@ -45,47 +41,48 @@ function CreateProduct() {
     };
 
     const filterOption = (input: string, option?: { label: string; value: number }) =>
-        (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
-    const handleGetUserAndDoOptionUser = async () => {
+    const handleGetTopicAndDoOptionTopic = async () => {
         try {
-            const data = await getUserApi();
-            if (data.status == 200) {
-                const dataAfterFilter = pickFields(data.data, ['id', 'name']);
-                setOptionsUser(dataAfterFilter);
+            const data = await getTopicsApi();
+            if(data.status == 200) {
+                const formData = pickFields(data?.data, ['id', 'title']);
+                setTopicOption(formData);
             }
         } catch (error) {
-            setOptionsUser([]);
+            setTopicOption([]);
         }
     }
 
     return (
         <div className='w-[600px] border mb-8'>
             <Form {...formItemLayout} form={form} variant="outlined" style={{ minWidth: 600 }} onFinish={onFinish}>
-                <h2 className='font-bold text-2xl text-center my-5'>Create product</h2>
-
+                <h2 className='font-bold text-2xl text-center my-5'>Create type</h2>
+                
                 <Form.Item
                     label="Name"
                     name="name"
                     rules={[
                         { required: true, message: 'Please enter name!' },
-                        { max: 50, message: 'name is too long' }
+                        { max: 30, message: 'name is too long' }
                     ]}
                 >
                     <Input placeholder="Enter name..." />
                 </Form.Item>
 
                 <Form.Item
-                    label="Users"
-                    name="userIds"
+                    label="Topic"
+                    name="topics"
                 >
-                    <Select
-                        options={optionsUser}
-                        placeholder='Select users'
+                    <Select 
+                        options={topicOption} 
+                        placeholder='Select topic' 
                         mode="multiple"
                         allowClear
+                        showSearch
                         filterOption={filterOption}
-                        onFocus={handleGetUserAndDoOptionUser}
+                        onFocus={handleGetTopicAndDoOptionTopic}
                     />
                 </Form.Item>
 
@@ -99,4 +96,4 @@ function CreateProduct() {
     )
 }
 
-export default CreateProduct;
+export default CreateType;

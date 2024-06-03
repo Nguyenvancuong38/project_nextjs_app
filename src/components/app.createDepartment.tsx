@@ -4,7 +4,9 @@ import {
     Button,
     Form,
     Input,
+    message
 } from 'antd';
+import { createDepartmentApi } from '@/api/apiClient';
 
 const formItemLayout = {
     labelCol: {
@@ -18,13 +20,25 @@ const formItemLayout = {
 };
 
 function CreateDepartment() {
-    const onFinish = (values: any) => {
-        console.log('Received values of form: ', values);
+    const [form] = Form.useForm();
+
+    const onFinish = async (values: any) => {
+        try {
+            const data = await createDepartmentApi(values);
+            if (data.status == 201) {
+                message.success('Create department successful');
+                form.resetFields();
+            } else {
+                message.error(data?.message ? data?.message : 'Have error when create department')
+            }
+        } catch (error) {
+            message.error('Have error when create department');
+        }
     };
 
     return (
         <div className='w-[600px] border my-8'>
-            <Form {...formItemLayout} variant="outlined" style={{ minWidth: 600 }} onFinish={onFinish}>
+            <Form {...formItemLayout} form={form} variant="outlined" style={{ minWidth: 600 }} onFinish={onFinish}>
                 <h2 className='font-bold text-2xl text-center my-5'>Create department</h2>
                 
                 <Form.Item

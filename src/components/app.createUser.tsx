@@ -5,8 +5,12 @@ import {
     Form,
     Input,
     Select,
+    message,
 } from 'antd';
 import { ROLE } from '@/constants/common';
+import { useState } from 'react';
+import { createUserApi, getDepartmentApi, getProductApi } from '@/api/apiClient';
+import { pickFields } from '@/utils/common';
 
 const formItemLayout = {
     labelCol: {
@@ -19,23 +23,58 @@ const formItemLayout = {
     },
 };
 
-const departments = [
-    { value: 1, label: 'TE' },
-    { value: 2, label: 'ME' },
-    { value: 3, label: 'EE' },
-];
-
 function CreateUser() {
-    const onFinish = (values: any) => {
-        console.log('Received values of form: ', values);
+    const [form] = Form.useForm();
+    const [optionDepartment, setOptionDepartment] = useState([]);
+    const [optionProduct, setOptionProduct] = useState([]);
+    const onFinish = async (values: any) => {
+        try {
+            const formData = {
+                ...values,
+                updateAt: new Date().toISOString()
+            }
+            const data = await createUserApi(formData);
+            if(data.status == 201) {
+                message.success('Create user successful');
+                form.resetFields();
+            }  else {
+                message.error(data?.message ? data?.message : 'Have error when create user');
+            }
+        } catch (error: any) {
+            message.error(error.response?.data?.message ? error.response?.data?.message: 'Have error when create user');
+        }
     };
 
     const filterOption = (input: string, option?: { label: string; value: number }) =>
             (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
+    const handleGetDepartmentAndDoOptionDepartment = async () => {
+        try {
+            const data = await getDepartmentApi();
+            if(data.status == 200) {
+                const formData = pickFields(data?.data, ['id', 'name']);
+                setOptionDepartment(formData);
+            }
+        } catch (error) {
+            setOptionDepartment([]);
+        }
+    }
+
+    const handleGetProductAndDoOptionProduct = async () => {
+        try {
+            const data = await getProductApi();
+            if(data.status == 200) {
+                const formData = pickFields(data?.data, ['id', 'name']);
+                setOptionProduct(formData);
+            }
+        } catch (error) {
+            setOptionProduct([]);
+        }
+    }
+
     return (
         <div className='w-[600px] border mb-8'>
-            <Form {...formItemLayout} variant="outlined" style={{ minWidth: 600 }} onFinish={onFinish}>
+            <Form {...formItemLayout} form={form} variant="outlined" style={{ minWidth: 600 }} onFinish={onFinish}>
                 <h2 className='font-bold text-2xl text-center my-5'>Create user</h2>
                 <Form.Item
                     label="Code"
@@ -83,14 +122,30 @@ function CreateUser() {
 
                 <Form.Item
                     label="Department"
-                    name="department"
+                    name="departmentId"
                     rules={[{ required: true, message: 'Please select department!' }]}
                 >
                     <Select 
-                        options={departments} 
+                        options={optionDepartment} 
                         placeholder='Select department' 
                         showSearch
                         filterOption={filterOption}
+                        onFocus={handleGetDepartmentAndDoOptionDepartment}
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    label="Product"
+                    name="productIds"
+                >
+                    <Select 
+                        options={optionProduct} 
+                        placeholder='Select product' 
+                        mode="multiple"
+                        showSearch
+                        allowClear
+                        filterOption={filterOption}
+                        onFocus={handleGetProductAndDoOptionProduct}
                     />
                 </Form.Item>
 
@@ -101,7 +156,6 @@ function CreateUser() {
                 >
                     <Select
                         options={ROLE}
-                        defaultValue={ROLE[0]}
                         placeholder='Select role'
                     />
                 </Form.Item>
