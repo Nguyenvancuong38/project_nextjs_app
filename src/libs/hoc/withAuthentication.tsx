@@ -32,6 +32,8 @@ export const withAuthentication = (WrappedComponent: any, allowedRoles?: string[
             setShouldRender(true);
           }
         }
+      } else {
+        router.push(ROUTE.SIGN_IN);
       }
     }, [isAuthenticated]);
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { getTopicsApi, getTypesApi } from '@/api/apiClient';
 import {
     Button,
     Form,
@@ -10,12 +11,13 @@ import {
     Divider,
     List,
     Skeleton,
-    Modal
+    Modal,
 } from 'antd';
 import React, { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 const { RangePicker } = DatePicker;
+const { TextArea } = Input;
 
 const options = [
     { value: 1, label: 'AA' },
@@ -43,68 +45,84 @@ interface DataTopicType {
 function ManageError() {
     const [loading, setLoading] = useState(false);
     const [dataTopic, setDataTopic] = useState<DataTopicType[]>([]);
+    const [listType, setListType] = useState([]);
+    const [isModalEditTopicOpen, setIsModalEditTopicOpen] = useState(false);
+    const [isModalCreateTopicOpen, setIsModalCreateTopicOpen] = useState(false);
 
     const loadMoreData = async () => {
         if (loading) {
             return;
         }
         setLoading(true);
-        fetch('http://localhost:3004/v1/topics/')
-            .then((res) => res.json())
-            .then((body) => {
-                console.log("topics: ", body.data);
-                
-                setDataTopic([...dataTopic, ...body.data]);
+        try {
+            const data = await getTopicsApi();
+            if(data.status == 200) {
+                setDataTopic([...dataTopic, ...data.data]);
                 setLoading(false);
-            })
-            .catch(() => {
+            } else {
                 setLoading(false);
-            });
-        // try {
-        //     const dataTopics = await getTocpicsApi();
-        //     if(dataTopics) {
-        //         setDataTopic([...data, ...dataTopics.data]);
-        //         setLoading(false);
-        //     } else {
-        //         setLoading(false);
-        //     }
-        // } catch (error) {
-        //     setLoading(false);
-        // }
+            }
+        } catch (error) {
+            setLoading(false);
+        }
     };
+
+    const getListTypeApi = async () => {
+        try {
+            const data = await getTypesApi();
+            setListType(data.data);
+        } catch (error) {
+            setListType([]);
+        }
+    }
 
     useEffect(() => {
         loadMoreData();
     }, []);
 
-    const onFinish = (values: any) => {
+    useEffect(() => {
+        getListTypeApi();
+    }, [])
+
+    const onFinishSearchTopic = (values: any) => {
         console.log('Received values of form: ', values);
     };
 
     const filterOption = (input: string, option?: { label: string; value: number }) =>
         (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const showModal = (topicId: number) => {
-        setIsModalOpen(true);
+    const showModalEditTopic = (topicId: number) => {
         console.log("id topic: ", topicId);
+        setIsModalEditTopicOpen(true);
     };
 
-    const handleOk = () => {
-        setIsModalOpen(false);
+    const onSubmitEditTopic = () => {
+        setIsModalEditTopicOpen(false);
     };
 
-    const handleCancel = () => {
-        setIsModalOpen(false);
+    const onCancelModalEditTopic = () => {
+        setIsModalEditTopicOpen(false);
+    };
+
+    const showModalCreateTopic = () => {
+        setIsModalCreateTopicOpen(true);
+    }
+
+    const onSubmitCreateTopic = (values: any) => {
+        console.log("value create: ", values);
+        setIsModalCreateTopicOpen(false);
+    };
+
+    const onCancelModalCreateTopic = () => {
+        setIsModalCreateTopicOpen(false);
     };
 
     return (
         <>
             <div className="flex w-full pt-14">
                 {/* Left column */}
-                <div className="w-[300px] flex justify-center items-start">
-                    <Form layout="vertical" variant="outlined" style={{ maxWidth: 260 }} onFinish={onFinish}>
+                <div className="w-[300px] flex flex-col justify-start items-center">
+                    <Form layout="vertical" variant="outlined" style={{ maxWidth: 260 }} onFinish={onFinishSearchTopic}>
                         <h2 className='font-bold text-2xl text-center my-5'>Search topic</h2>
                         <Form.Item
                             label="Search name:"
@@ -114,7 +132,7 @@ function ManageError() {
                         </Form.Item>
 
                         <Form.Item
-                            name="Product"
+                            name="product"
                             label="Select Product:"
                         >
                             <Select
@@ -132,12 +150,31 @@ function ManageError() {
                             <RangePicker />
                         </Form.Item>
 
-                        <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
+                        <Form.Item
+                            name="type"
+                            label="Select type:"
+                        >
+                            <Select
+                                options={[]}
+                                placeholder='Select type'
+                                allowClear
+                                filterOption={filterOption}
+                                mode="multiple"
+                            />
+                        </Form.Item>
+
+                        <Form.Item className='w-full flex justify-center'>
                             <Button type="primary" htmlType="submit">
                                 Submit
                             </Button>
                         </Form.Item>
                     </Form>
+                    <div className='w-full border-t flex flex-col items-center justify-center pt-4'>
+                        <h2 className='font-bold text-2xl text-center mt-2 mb-5'>Create topic</h2>
+                        <Button type="primary" onClick={showModalCreateTopic}>
+                            Create Topic
+                        </Button>
+                    </div>
                 </div>
                 {/* Right column  */}
                 <div className="border-l grow">
@@ -165,7 +202,7 @@ function ManageError() {
                                                 description={<p>{item.author?.name}</p>}
                                             />
                                             <Button type="primary">{item.product?.name}</Button>
-                                            <Button onClick={() => showModal(item.id)} type="link">Content</Button>
+                                            <Button onClick={() => showModalEditTopic(item.id)} type="link">Content</Button>
                                         </List.Item>
                                     )}
                                 />
@@ -174,10 +211,54 @@ function ManageError() {
                     </div>
                 </div>
             </div>
-            <Modal title="Basic Modal" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+            {/* Edit topic */}
+            <Modal title="Edit Topic" open={isModalEditTopicOpen} onOk={onSubmitEditTopic} onCancel={onCancelModalEditTopic}>
                 <p>Some contents...</p>
                 <p>Some contents...</p>
                 <p>Some contents...</p>
+            </Modal>
+
+            {/* Create topic */}
+            <Modal
+                title="Create A New Topic"
+                open={isModalCreateTopicOpen}
+                onCancel={onCancelModalCreateTopic}
+                footer={null}
+            >
+                <Form layout="vertical" variant="outlined" style={{ maxWidth: 600 }} onFinish={onSubmitCreateTopic}>
+                    <Form.Item
+                        label="Title:"
+                        name="tile"
+                    >
+                        <Input placeholder="Enter title topic..." />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Content:"
+                        name='content'
+                    >
+                        <TextArea rows={4} placeholder='Enter content topic...' />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="type"
+                        label="Type:"
+                    >
+                        <Select
+                            options={listType}
+                            placeholder='Select type'
+                            allowClear
+                            filterOption={filterOption}
+                            mode="multiple"
+                        />
+                    </Form.Item>
+
+                    <Form.Item className='w-full flex justify-center'>
+                        <Button type="primary" htmlType="submit" loading={false}>
+                            Submit
+                        </Button>
+                    </Form.Item>
+                </Form>
             </Modal>
         </>
     )

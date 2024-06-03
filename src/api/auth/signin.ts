@@ -1,5 +1,5 @@
 import axiosInstance from "@/helpers/axios";
-import { getUser, setAccessToken, setUser } from "@/helpers/localAuth";
+import { setAccessToken, setUser } from "@/helpers/localAuth";
 
 const APIs = {
     SIGNIN: "/auth/login"
