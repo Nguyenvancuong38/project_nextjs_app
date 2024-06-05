@@ -5,12 +5,29 @@ const APIs = {
     TYPE: "/types",
     DEPARTMENT: "/department",
     USER: "/users",
-    PRODUCT: "/product"
+    PRODUCT: "/product",
+    TOPICSUB: "/topic-sub"
 }
 
 //Topic API
 export const getTopicsApi = async () => {
     const data = await axiosInstance.get(APIs.TOPIC);
+    return data?.data;
+};
+
+export const createTopicApi = async (values: any) => {
+    const data = await axiosInstance.post(APIs.TOPIC, values);
+    return data?.data;
+};
+
+export const getTopicById = async (topicId: any) => {
+    const data = await axiosInstance.get(`${APIs.TOPIC}/${topicId}`);
+    return data?.data;
+};
+
+//Topic sub API 
+export const createTopicSub = async (values: any) => {
+    const data = await axiosInstance.post(APIs.TOPICSUB, values);
     return data?.data;
 };
 
