@@ -12,8 +12,9 @@ import {
     Modal,
     message,
 } from 'antd';
-import { createTopicApi, createTopicSub, getProductApi, getTopicById, getTopicsApi, getTypesApi } from '@/api/apiClient';
+import { createTopicApi, getProductApi, getTopicsApi, getTypesApi } from '@/api/apiClient';
 import { pickFields } from '@/utils/common';
+import Comment from '@/components/app.comment';
 
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
@@ -43,7 +44,6 @@ function ManageError() {
     const [loading, setLoading] = useState(false);
     const [dataTopic, setDataTopic] = useState<DataTopicType[]>([]);
     const [topicIdEdit, setTopicIdEdit] = useState(1);
-    const [dataTopicDetail, setDataTopicDetail] = useState<DataTopicType>();
     const [optionType, setOptionType] = useState([]);
     const [optionProduct, setOptionProduct] = useState([]);
     const [isModalEditTopicOpen, setIsModalEditTopicOpen] = useState(false);
@@ -77,42 +77,8 @@ function ManageError() {
         (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
     const showModalEditTopic = async (topicId: number) => {
-        setIsModalEditTopicOpen(true);
         setTopicIdEdit(topicId);
-        try {
-            const topic = await getTopicById(topicId);
-            if (topic.status == 200) {
-                setDataTopicDetail(topic.data);
-            }
-        } catch (error) {
-            message.error('Get topic not successful');
-            setDataTopicDetail(undefined);
-            setIsModalEditTopicOpen(false);
-        }
-    };
-
-    const onSubmitEditTopic = async (values: any) => {
-        const formData = {
-            ...values,
-            image: null,
-            topicId: topicIdEdit,
-            updateAt: new Date().toISOString()
-        }
-
-        try {
-            const data = await createTopicSub(formData);
-            if(data.status == 201) {
-                message.success(data.message);
-                showModalEditTopic(topicIdEdit);
-                form.resetFields();
-            }
-        } catch (error: any) {
-            if(error.response?.data?.message == 'Unauthorized') {
-                message.error('Please login before!');
-            } else {
-                message.error(error.response?.data?.message ? error.response?.data?.message : 'Have error when create topic sub!');
-            }
-        }
+        setIsModalEditTopicOpen(true);
     };
 
     const onCancelModalEditTopic = () => {
@@ -272,26 +238,7 @@ function ManageError() {
                 onCancel={onCancelModalEditTopic}
                 footer={null}
             >
-                <div>
-                    <h2 className='w-full text-center mb-3'>{dataTopicDetail?.title}</h2>
-                    <p>{dataTopicDetail?.content}</p>
-                    {dataTopicDetail?.topicSubs.map(item => (
-                        <div key={item.id}>{item.content}</div>
-                    ))}
-                </div>
-                <Form form={form} layout="vertical" variant="outlined" style={{ maxWidth: 600 }} onFinish={onSubmitEditTopic}>
-                    <Form.Item
-                        label="Add answer:"
-                        name='content'
-                    >
-                        <TextArea rows={4} placeholder='Enter content ...' />
-                    </Form.Item>
-                    <Form.Item className='w-full flex justify-center'>
-                        <Button type="primary" htmlType="submit" loading={false}>
-                            Submit
-                        </Button>
-                    </Form.Item>
-                </Form>
+                <Comment topicId={topicIdEdit}/>
             </Modal>
 
             {/* Create topic */}
