@@ -36,6 +36,11 @@ export const deleteTopicSubById = async (id: any) => {
     return data?.data;
 };
 
+export const updateTopicSub = async (id: any, values: any) => {
+    const data = await axiosInstance.patch(`${APIs.TOPICSUB}/${id}`, values);
+    return data?.data;
+};
+
 //Type API
 export const getTypesApi = async () => {
     const data = await axiosInstance.get(APIs.TYPE);
