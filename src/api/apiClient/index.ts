@@ -25,6 +25,11 @@ export const getTopicById = async (topicId: any) => {
     return data?.data;
 };
 
+export const updateTopicApi = async (id: number, values: any) => {
+    const data = await axiosInstance.patch(`${APIs.TOPIC}/${id}`, values);
+    return data?.data;
+};
+
 //Topic sub API 
 export const createTopicSub = async (values: any) => {
     const data = await axiosInstance.post(APIs.TOPICSUB, values);

@@ -22,8 +22,6 @@ export const withAuthentication = (WrappedComponent: any, allowedRoles?: string[
             const isValidUserPermissions = validateUserPermissions({ userRoles: user?.role, roles: allowedRoles });
 
             if (!isValidUserPermissions) {
-              console.log("forbidden");
-              
               router.push(ROUTE.FORBIDDEN);
             } else {
               setShouldRender(true);

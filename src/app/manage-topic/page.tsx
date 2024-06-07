@@ -11,8 +11,9 @@ import {
     List,
     Modal,
     message,
+    Spin,
 } from 'antd';
-import { createTopicApi, getProductApi, getTopicsApi, getTypesApi } from '@/api/apiClient';
+import { createTopicApi, getProductApi, getTopicById, getTopicsApi, getTypesApi, updateTopicApi } from '@/api/apiClient';
 import { pickFields } from '@/utils/common';
 import Comment from '@/components/app.comment';
 
@@ -40,12 +41,22 @@ interface DataTopicType {
     }[]
 }
 
+interface DataTopicEditFormType {
+    title: string;
+    content: string;
+    productId: number;
+    types: any;
+}
+
 function ManageError() {
     const [loading, setLoading] = useState(false);
     const [dataTopic, setDataTopic] = useState<DataTopicType[]>([]);
+    const [dataTopicEdit, setDataTopicEdit] = useState<DataTopicEditFormType>();
+    const [topicIdContent, setTopicIdContent] = useState(1);
     const [topicIdEdit, setTopicIdEdit] = useState(1);
     const [optionType, setOptionType] = useState([]);
     const [optionProduct, setOptionProduct] = useState([]);
+    const [isModalContentTopicOpen, setIsModalContentTopicOpen] = useState(false);
     const [isModalEditTopicOpen, setIsModalEditTopicOpen] = useState(false);
     const [isModalCreateTopicOpen, setIsModalCreateTopicOpen] = useState(false);
     const [form] = Form.useForm();
@@ -76,9 +87,29 @@ function ManageError() {
     const filterOption = (input: string, option?: { label: string; value: number }) =>
         (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
-    const showModalEditTopic = async (topicId: number) => {
-        setTopicIdEdit(topicId);
+    const showModalContentTopic = (topicId: number) => {
+        setTopicIdContent(topicId);
+        setIsModalContentTopicOpen(true);
+    };
+
+    const showModalEditTopic = async (id: number) => {
+        setDataTopicEdit(undefined);
         setIsModalEditTopicOpen(true);
+        const topic = await getTopicById(id);
+        if (topic.status == 200) {
+            const formData = {
+                title: topic.data.title,
+                content: topic.data.content,
+                productId: topic.data.productId,
+                types: topic.data.types.map((item: any) => item.typeId)
+            }
+            setDataTopicEdit(formData);
+        }
+        setTopicIdEdit(id);
+    };
+
+    const onCancelModalContentTopic = () => {
+        setIsModalContentTopicOpen(false);
     };
 
     const onCancelModalEditTopic = () => {
@@ -92,7 +123,7 @@ function ManageError() {
     const onSubmitCreateTopic = async (values: any) => {
         const formData = {
             ...values,
-            types: (values.hasOwnProperty('types') && values.types) ? values.types : [],
+            types: (values.hasOwnProperty('types') && values.types.constructor === Array) ? values.types : [],
             updateAt: new Date().toISOString()
         }
 
@@ -110,6 +141,32 @@ function ManageError() {
             message.error(error.response?.data?.message ? error.response?.data?.message : 'Have error when create topic');
         }
     };
+
+    const onSubmitEditTopic = async (values: any) => {
+        try {
+            const topic = await getTopicById(topicIdEdit);
+            if (topic.status == 200) {
+                const formData = {
+                    ...values,
+                    types: (values.hasOwnProperty('types') && values.types.constructor === Array) ? values.types : [],
+                    updateAt: new Date().toISOString()
+                }
+                const data = await updateTopicApi(topicIdEdit, formData);
+                if (data.status == 202) {
+                    message.success(data.message);
+                    setIsModalEditTopicOpen(false);
+                    loadMoreData();
+                }
+            }
+        } catch (error: any) {
+            if (error.response?.data?.message == 'Unauthorized') {
+                message.error('Please login before!');
+            } else {
+                message.error(error.response?.data?.message ? error.response?.data?.message : 'Have error when create topic sub!');
+            }
+        }
+    }
+
 
     const onCancelModalCreateTopic = () => {
         setIsModalCreateTopicOpen(false);
@@ -223,8 +280,9 @@ function ManageError() {
                                             title={item.title}
                                             description={<p>{item.author?.name}</p>}
                                         />
-                                        <Button type="primary">{item.product?.name}</Button>
-                                        <Button onClick={() => showModalEditTopic(item.id)} type="link">Content</Button>
+                                        <Button onClick={() => showModalEditTopic(item.id)} type="link">Edit</Button>
+                                        <Button onClick={() => showModalContentTopic(item.id)} type="link">Content</Button>
+                                        <Button type="link">{item.product?.name}</Button>
                                     </List.Item>
                                 )}
                             />
@@ -232,13 +290,13 @@ function ManageError() {
                     </div>
                 </div>
             </div>
-            {/* Edit topic */}
-            <Modal title="Edit Topic"
-                open={isModalEditTopicOpen}
-                onCancel={onCancelModalEditTopic}
+            {/* Content topic */}
+            <Modal title="Content of Topic"
+                open={isModalContentTopicOpen}
+                onCancel={onCancelModalContentTopic}
                 footer={null}
             >
-                <Comment topicId={topicIdEdit}/>
+                <Comment topicId={topicIdContent} />
             </Modal>
 
             {/* Create topic */}
@@ -304,7 +362,83 @@ function ManageError() {
                     </Form.Item>
                 </Form>
             </Modal>
+
+            {/* Edit topic */}
+            <Modal
+                title="Edit Topic"
+                open={isModalEditTopicOpen}
+                onCancel={onCancelModalEditTopic}
+                footer={null}
+            >
+                {!dataTopicEdit ? <Spin /> : 
+                    <Form
+                        layout="vertical"
+                        variant="outlined"
+                        style={{ maxWidth: 600 }}
+                        onFinish={onSubmitEditTopic}
+                    >
+                        <Form.Item
+                            label="Title:"
+                            name="title"
+                            rules={[
+                                { required: true, message: 'Please enter title!' },
+                                { max: 150, message: 'title is too long' }
+                            ]}
+                            initialValue={dataTopicEdit.title}
+                        >
+                            <Input placeholder="Enter title topic..." />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Content:"
+                            name='content'
+                            initialValue={dataTopicEdit.content}
+                        >
+                            <TextArea rows={4} placeholder='Enter content topic...' />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="productId"
+                            label="Product:"
+                            initialValue={dataTopicEdit.productId}
+                            rules={[
+                                { required: true, message: 'Please select product!' }
+                            ]}
+                        >
+                            <Select
+                                options={optionProduct}
+                                placeholder='Select product'
+                                allowClear
+                                filterOption={filterOption}
+                                onFocus={handleGetProductAndDoOptionProduct}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="types"
+                            label="Type:"
+                            initialValue={dataTopicEdit.types}
+                        >
+                            <Select
+                                options={optionType}
+                                placeholder='Select type'
+                                allowClear
+                                filterOption={filterOption}
+                                mode="multiple"
+                                onFocus={handleGetTypeAndDoOptionType}
+                            />
+                        </Form.Item>
+
+                        <Form.Item className='w-full flex justify-center'>
+                            <Button type="primary" htmlType="submit" loading={false}>
+                                Submit
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                }
+            </Modal>
         </>
+
     )
 }
 

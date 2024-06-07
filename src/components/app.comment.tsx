@@ -85,7 +85,6 @@ function Comment({ topicId }: any) {
                 if (data.status == 202) {
                     message.success(data.message);
                     loadDataTopicDetail(topicId);
-                    form.resetFields();
                 }
             } catch (error: any) {
                 if (error.response?.data?.message == 'Unauthorized') {
@@ -94,7 +93,7 @@ function Comment({ topicId }: any) {
                     message.error(error.response?.data?.message ? error.response?.data?.message : 'Have error when create topic sub!');
                 }
             }
-        } 
+        }
         setTopicSubIdChooseEdit(undefined);
     }
 
@@ -127,14 +126,12 @@ function Comment({ topicId }: any) {
             <h2 className='w-full text-center font-bold mb-3'>{dataTopicDetail?.title}</h2>
             <div className="flex flex-row w-full my-4">
                 <div className="mr-4"><Avatar src='' /></div>
-                <div className="">
+                <div className="grow">
                     <h2 className="h-8 font-bold flex items-center">{dataTopicDetail?.author?.name}</h2>
                     <p className="border p-4 rounded-md">{dataTopicDetail?.content}</p>
-                    <div className="flex">
-                        <Button type="link" className="p-2 pt-0 mr-3">edit</Button>
-                    </div>
                 </div>
             </div>
+
             {dataTopicDetail?.topicSubs.map(item => (
                 <div key={item.id} className="flex flex-row w-full my-4">
                     <div className="mr-4"><Avatar src='' /></div>
@@ -145,11 +142,11 @@ function Comment({ topicId }: any) {
                                 <Form.Item
                                     style={{ marginBottom: 8 }}
                                     name='content'
+                                    initialValue={item.content}
                                 >
                                     <Input.TextArea
                                         autoSize
                                         readOnly={topicSubIdChooseEdit != item.id}
-                                        defaultValue={item.content}
                                         autoFocus={topicSubIdChooseEdit == item.id}
                                         placeholder='Enter content ...'
                                     />
