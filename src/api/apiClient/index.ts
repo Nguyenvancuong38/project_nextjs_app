@@ -30,6 +30,11 @@ export const updateTopicApi = async (id: number, values: any) => {
     return data?.data;
 };
 
+export const deleteTopicById = async (id: number) => {
+    const data = await axiosInstance.delete(`${APIs.TOPIC}/${id}`);
+    return data?.data;
+};
+
 //Topic sub API 
 export const createTopicSub = async (values: any) => {
     const data = await axiosInstance.post(APIs.TOPICSUB, values);

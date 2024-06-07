@@ -12,8 +12,10 @@ import {
     Modal,
     message,
     Spin,
+    Popconfirm,
 } from 'antd';
-import { createTopicApi, getProductApi, getTopicById, getTopicsApi, getTypesApi, updateTopicApi } from '@/api/apiClient';
+import type { PopconfirmProps } from 'antd';
+import { createTopicApi, deleteTopicById, getProductApi, getTopicById, getTopicsApi, getTypesApi, updateTopicApi } from '@/api/apiClient';
 import { pickFields } from '@/utils/common';
 import Comment from '@/components/app.comment';
 
@@ -52,13 +54,14 @@ function ManageError() {
     const [loading, setLoading] = useState(false);
     const [dataTopic, setDataTopic] = useState<DataTopicType[]>([]);
     const [dataTopicEdit, setDataTopicEdit] = useState<DataTopicEditFormType>();
-    const [topicIdContent, setTopicIdContent] = useState(1);
-    const [topicIdEdit, setTopicIdEdit] = useState(1);
+    const [topicIdContent, setTopicIdContent] = useState<number>(1);
+    const [topicIdEdit, setTopicIdEdit] = useState<number>(1);
     const [optionType, setOptionType] = useState([]);
     const [optionProduct, setOptionProduct] = useState([]);
     const [isModalContentTopicOpen, setIsModalContentTopicOpen] = useState(false);
     const [isModalEditTopicOpen, setIsModalEditTopicOpen] = useState(false);
     const [isModalCreateTopicOpen, setIsModalCreateTopicOpen] = useState(false);
+    const [topicIdChooseDelete, setTopicIdChooseDelete] = useState<number>(1);
     const [form] = Form.useForm();
 
     const loadMoreData = async () => {
@@ -167,6 +170,21 @@ function ManageError() {
         }
     }
 
+    const confirmDeleteTopic: PopconfirmProps['onConfirm'] = async () => {
+        try {
+            const data = await deleteTopicById(topicIdChooseDelete);
+            if (data.status == 204) {
+                message.success(data.message);
+                loadMoreData();
+            }
+        } catch (error: any) {
+            if (error.response?.data?.message == 'Unauthorized') {
+                message.error('Please login before!');
+            } else {
+                message.error(error.response?.data?.message ? error.response?.data?.message : 'Have error when delete topic!');
+            }
+        }
+    };
 
     const onCancelModalCreateTopic = () => {
         setIsModalCreateTopicOpen(false);
@@ -283,6 +301,15 @@ function ManageError() {
                                         <Button onClick={() => showModalEditTopic(item.id)} type="link">Edit</Button>
                                         <Button onClick={() => showModalContentTopic(item.id)} type="link">Content</Button>
                                         <Button type="link">{item.product?.name}</Button>
+                                        <Popconfirm
+                                            title="Delete the Topic"
+                                            description="Are you sure to delete this topic?"
+                                            onConfirm={confirmDeleteTopic}
+                                            okText="Yes"
+                                            cancelText="No"
+                                        >
+                                            <Button onClick={() => setTopicIdChooseDelete(item.id)} type="link" className="p-2 pt-0" danger>delete</Button>
+                                        </Popconfirm>
                                     </List.Item>
                                 )}
                             />
@@ -370,7 +397,7 @@ function ManageError() {
                 onCancel={onCancelModalEditTopic}
                 footer={null}
             >
-                {!dataTopicEdit ? <Spin /> : 
+                {!dataTopicEdit ? <Spin /> :
                     <Form
                         layout="vertical"
                         variant="outlined"
