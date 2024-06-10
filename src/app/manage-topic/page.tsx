@@ -81,6 +81,8 @@ function ManageError() {
 
     useEffect(() => {
         loadMoreData();
+        handleGetProductAndDoOptionProduct();
+        handleGetTypeAndDoOptionType();
     }, []);
 
     const onFinishSearchTopic = (values: any) => {
@@ -97,7 +99,7 @@ function ManageError() {
 
     const showModalEditTopic = async (id: number) => {
         setDataTopicEdit(undefined);
-        setIsModalEditTopicOpen(true);
+        setIsModalEditTopicOpen(true);       
         const topic = await getTopicById(id);
         if (topic.status == 200) {
             const formData = {
