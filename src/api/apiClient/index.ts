@@ -94,3 +94,18 @@ export const createUserApi = async (values: any) => {
     const data = await axiosInstance.post(APIs.USER, values);
     return data?.data;
 }
+
+export const getUserByIdApi = async (id: number) => {
+    const data = await axiosInstance.get(`${APIs.USER}/${id}`);
+    return data?.data;
+} 
+
+export const updateUserByIdApi = async (id: number, values: any) => {
+    const data = await axiosInstance.patch(`${APIs.USER}/${id}`, values);
+    return data?.data;
+} 
+
+export const deleteUserByIdApi = async (id: number) => {
+    const data = await axiosInstance.delete(`${APIs.USER}/${id}`);
+    return data?.data;
+} 

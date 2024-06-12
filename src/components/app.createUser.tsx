@@ -11,6 +11,7 @@ import { ROLE } from '@/constants/common';
 import { useState } from 'react';
 import { createUserApi, getDepartmentApi, getProductApi } from '@/api/apiClient';
 import { pickFields } from '@/utils/common';
+import { useRouter } from 'next/navigation'
 
 const formItemLayout = {
     labelCol: {
@@ -25,6 +26,7 @@ const formItemLayout = {
 
 function CreateUser() {
     const [form] = Form.useForm();
+    const route = useRouter();
     const [optionDepartment, setOptionDepartment] = useState([]);
     const [optionProduct, setOptionProduct] = useState([]);
     const onFinish = async (values: any) => {
@@ -37,6 +39,7 @@ function CreateUser() {
             if(data.status == 201) {
                 message.success('Create user successful');
                 form.resetFields();
+                route.push('/manage-data/user');
             }  else {
                 message.error(data?.message ? data?.message : 'Have error when create user');
             }
