@@ -5,14 +5,18 @@ import { useRouter } from 'next/navigation'
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
 import { signin } from '@/api/auth';
+import { useUser } from '@/context/UserContext';
 
 const Login: React.FC = () => {
   const [errMsg, setErrMsg] = useState<string>()
   const route = useRouter();
+  const { setUserStore } = useUser();
+
   const onFinish = async (values: any) => {
     try {
         const res = await signin(values);
-        if(res == 200) {
+        setUserStore({ name: res.user.name });
+        if(res.status == 200) {
             route.push('/');
         }
     } catch (error: any) {
