@@ -7,21 +7,21 @@ import { localAuthenticate } from "@/helpers/localAuth";
 import { useUser } from "@/context/UserContext";
 
 function Header() {
-    const { user, setUser } = useUser();
+    const { userStore, setUserStore } = useUser();
 
     useEffect(() => {
         const data = localAuthenticate();
         if (data.user?.name) {
-            setUser({ name: data.user?.name });
+            setUserStore({ name: data.user?.name });
         }
-    }, [setUser])
+    }, [setUserStore])
     
     return (
         <header className="w-full h-14 flex justify-between items-center px-4 border-b fixed z-10 bg-white">
             <div className="font-bold text-2xl"><Link href="/">DASHBOARD</Link></div>
             <div className="font-medium">
                 <a className="mr-2 flex justify-center items-center" href='/login'>
-                    <p className="mr-1">{user.name ? user.name : 'Login'}</p>
+                    <p className="mr-1">{userStore.name ? userStore.name : 'Login'}</p>
                     <Image
                         src="/profile.jpg"
                         width={20}

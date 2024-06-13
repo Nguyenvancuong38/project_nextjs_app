@@ -1,25 +1,31 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { localAuthenticate } from '@/helpers/localAuth';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface User {
     name: string | null;
 }
 
 interface UserContextType {
-    user: User;
-    setUser: (user: User) => void;
+    userStore: User;
+    setUserStore: (user: User) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User>({ name: null });
-    console.log("user: ", user);
-    
+    const [userStore, setUserStore] = useState<User>({ name: null });
+    const {isAuthenticated, user} = localAuthenticate();
+
+    useEffect(() => {
+        if(isAuthenticated) {
+            setUserStore(user);
+        }
+    }, [isAuthenticated])
 
     return (
-        <UserContext.Provider value={{ user, setUser }}>
+        <UserContext.Provider value={{ userStore, setUserStore }}>
             {children}
         </UserContext.Provider>
     );
@@ -28,7 +34,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 export const useUser = () => {
     const context = useContext(UserContext);
     if (context === undefined) {
-        return { user: { name: null }, setUser: () => {} };
+        return { userStore: { name: null }, setUserStore: () => {} };
     }
     return context;
 };

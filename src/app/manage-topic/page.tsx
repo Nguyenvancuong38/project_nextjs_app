@@ -13,7 +13,7 @@ import {
     Modal
 } from 'antd';
 import React, { useEffect, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
+// import InfiniteScroll from 'react-infinite-scroll-component';
 
 const { RangePicker } = DatePicker;
 
@@ -147,14 +147,14 @@ function ManageError() {
                             id="scrollableDiv"
                             className='h-full overflow-auto px-4 border border-solid border-[rgba(140,140,140,0.35)]'
                         >
-                            <InfiniteScroll
+                            {/* <InfiniteScroll
                                 dataLength={dataTopic.length}
                                 next={loadMoreData}
                                 hasMore={dataTopic.length < 0}
                                 loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
                                 endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
                                 scrollableTarget="scrollableDiv"
-                            >
+                            > */}
                                 <List
                                     dataSource={dataTopic}
                                     renderItem={(item) => (
@@ -169,7 +169,7 @@ function ManageError() {
                                         </List.Item>
                                     )}
                                 />
-                            </InfiniteScroll>
+                            {/* </InfiniteScroll> */}
                         </div>
                     </div>
                 </div>

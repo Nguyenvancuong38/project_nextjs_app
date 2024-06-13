@@ -10,12 +10,12 @@ import { useUser } from '@/context/UserContext';
 const Login: React.FC = () => {
   const [errMsg, setErrMsg] = useState<string>()
   const route = useRouter();
-  const { setUser } = useUser();
+  const { setUserStore } = useUser();
   
   const onFinish = async (values: any) => {
     try {
         const res = await signin(values);
-        setUser({ name: res.name });
+        setUserStore({ name: res.user.name });
         if(res.status == 200) {
             route.push('/');
         }
