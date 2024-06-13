@@ -1,5 +1,5 @@
 import axiosInstance from "@/helpers/axios";
-import { setAccessToken, setUser } from "@/helpers/localAuth";
+import { deleteUser, removeAccessToken, setAccessToken, setUser } from "@/helpers/localAuth";
 
 const APIs = {
     SIGNIN: "/auth/login"
@@ -10,3 +10,8 @@ export const signin = async ({ code, password }: any) => {
     setUser(data.data?.user);
     return data.data?.status;
 };
+
+export const signout = async () => {
+    await removeAccessToken();
+    await deleteUser();
+}

@@ -128,7 +128,7 @@ function ManageError() {
     const onSubmitCreateTopic = async (values: any) => {
         const formData = {
             ...values,
-            types: (values.hasOwnProperty('types') && values.types.constructor === Array) ? values.types : [],
+            types: (values.hasOwnProperty('types') && values.types) ? values.types : [],
             updateAt: new Date().toISOString()
         }
 

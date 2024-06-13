@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation'
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
-import { signin } from '@/api/auth/signin';
+import { signin } from '@/api/auth';
 
 const Login: React.FC = () => {
   const [errMsg, setErrMsg] = useState<string>()
