@@ -15,6 +15,11 @@ export const getTopicsApi = async () => {
     return data?.data;
 };
 
+export const getTopicWithParamApi = async (values: any) => {
+    const data = await axiosInstance.post(`${APIs.TOPIC}/search`, values);
+    return data?.data;
+};
+
 export const createTopicApi = async (values: any) => {
     const data = await axiosInstance.post(APIs.TOPIC, values);
     return data?.data;

@@ -15,11 +15,11 @@ import {
     Popconfirm,
 } from 'antd';
 import type { PopconfirmProps } from 'antd';
-import { createTopicApi, deleteTopicById, getProductApi, getTopicById, getTopicsApi, getTypesApi, updateTopicApi } from '@/api/apiClient';
+import { createTopicApi, deleteTopicById, getProductApi, getTopicById, getTopicWithParamApi, getTopicsApi, getTypesApi, updateTopicApi } from '@/api/apiClient';
 import { pickFields } from '@/utils/common';
 import Comment from '@/components/app.comment';
 
-const { RangePicker } = DatePicker;
+// const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
 interface DataTopicType {
@@ -85,8 +85,26 @@ function ManageError() {
         handleGetTypeAndDoOptionType();
     }, []);
 
-    const onFinishSearchTopic = (values: any) => {
-        console.log('Received values of form: ', values);
+    const onFinishSearchTopic = async (values: any) => {
+        setLoading(true);
+        try {
+            const formData = {
+                ...values,
+                title: !!values.title ? values.title : undefined,
+            }
+            console.log("formData: ", formData);
+            
+            const data = await getTopicWithParamApi(formData);
+            if (data.status == 200) {
+                setDataTopic(data.data);
+                setLoading(false);
+            } else {
+                setLoading(false);
+            }
+        } catch (error: any) {
+            setLoading(false);
+            message.error(error.response?.data?.message ? error.response?.data?.message : 'Have error when search topic');
+        }
     };
 
     const filterOption = (input: string, option?: { label: string; value: number }) =>
@@ -221,18 +239,18 @@ function ManageError() {
             <div className="flex w-full pt-14">
                 {/* Left column */}
                 <div className="w-[300px] flex flex-col justify-start items-center">
-                    <Form layout="vertical" variant="outlined" style={{ maxWidth: 260 }} onFinish={onFinishSearchTopic}>
+                    <Form layout="vertical" variant="outlined" style={{ minWidth: 260 }} onFinish={onFinishSearchTopic}>
                         <h2 className='font-bold text-2xl text-center my-5'>Search topic</h2>
                         <Form.Item
-                            label="Search name:"
-                            name="search"
+                            label="Search tile:"
+                            name="title"
                         >
-                            <Input placeholder="Search with name..." />
+                            <Input placeholder="Search with title..." />
                         </Form.Item>
 
                         <Form.Item
-                            name="product"
                             label="Select Product:"
+                            name="productId"
                         >
                             <Select
                                 options={optionProduct}
@@ -243,15 +261,15 @@ function ManageError() {
                             />
                         </Form.Item>
 
-                        <Form.Item
+                        {/* <Form.Item
                             name="time"
                             label="Select Time:"
                         >
                             <RangePicker />
-                        </Form.Item>
+                        </Form.Item> */}
 
                         <Form.Item
-                            name="type"
+                            name="typeId"
                             label="Select type:"
                         >
                             <Select
@@ -259,7 +277,6 @@ function ManageError() {
                                 placeholder='Select type'
                                 allowClear
                                 filterOption={filterOption}
-                                mode="multiple"
                                 showSearch
                                 onFocus={handleGetTypeAndDoOptionType}
                             />
